@@ -1,7 +1,7 @@
-import { fastify } from "../lib/fastifyProvider";
+import { app } from "../lib/socketProvider";
 
 export const registerHome = () => {
-  fastify.get("/home", async () => {
-    return "bruh";
+  app.get("/home", (req, res) => {
+    res.send("beuh");
   });
 };
