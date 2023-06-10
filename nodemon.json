@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ignore": ["src/**/*.test.ts", "node_modules"],
   "ext": "ts,mjs,js,json,graphql",
-  "exec": "etsc"
+  "exec": "etsc && node ./dist/index.js"
 }

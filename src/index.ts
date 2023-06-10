@@ -1,10 +1,16 @@
+import { Session } from "./lib/session";
 import { app, io, server } from "./lib/socketProvider";
 import { registerHome } from "./routes/home";
 
 registerHome();
 
-io.on("connection", () => {
-  console.log("connected");
+const sessionProvider = new Session();
+
+io.on("connection", (socket) => {
+  console.log("connected ", socket.id);
+  socket.on("session-new", () => {
+    socket.emit("session-here", sessionProvider.newSession());
+  });
 });
 
-server.listen(3000);
+server.listen(3001);
