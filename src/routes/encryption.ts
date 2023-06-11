@@ -1,3 +1,1 @@
-const registerEncryptionSocket = () => {
-  
-};
+const registerEncryptionSocket = () => {};

@@ -1,4 +1,8 @@
-import crypto from "crypto";
+import crypto, { createECDH } from "crypto";
 
-export const cryptoServer = crypto.getDiffieHellman("modp18");
-export const keys = cryptoServer.generateKeys();
+export const serEnc = createECDH("secp384r1");
+
+export const serEncPubKeyB64 = () => {
+	serEnc.generateKeys();
+	return serEnc.getPublicKey().toString("base64");
+};

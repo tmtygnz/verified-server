@@ -1,5 +1,4 @@
 export interface ISession {
-  sessionId: string;
-  userId: string;
-  publicKey: string;
+	sessionId: string;
+	publicKey: string;
 }
