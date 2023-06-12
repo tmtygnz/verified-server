@@ -1,12 +1,29 @@
-import crypto from "crypto";
+import forge from "node-forge";
 
-export const encryptAES = (data: string, key: string) => {
-	let iv = crypto.randomBytes(12);
-	let sha = crypto.createHash("sha256");
-	sha.update(key);
+export const encryptAES = (data: string, keyf: string) => {
+	var key = keyf;
 
-	let cipher = crypto.createCipheriv("chacha20-poly1305", sha.digest(), iv);
-	let ch = cipher.update(data);
-	let encrypted = Buffer.concat([iv, ch, cipher.final()]).toString("base64");
-	return { iv: iv, encrypted };
+	// Generate random IV
+	var iv = forge.random.getBytesSync(16);
+
+	// Create cipher using AES-CBC mode
+	var cipher = forge.cipher.createCipher(
+		"AES-CBC",
+		forge.util.createBuffer(key)
+	);
+	cipher.start({ iv: iv });
+	cipher.update(forge.util.createBuffer(data));
+	cipher.finish();
+
+	// Get the encrypted bytes
+	var encrypted = cipher.output;
+
+	// Combine IV and encrypted data
+	var combined = forge.util.createBuffer();
+	combined.putBytes(iv);
+	combined.putBuffer(encrypted);
+
+	// Return base64-encoded encrypted data
+	let b64enc = forge.util.encode64(combined.getBytes());
+	return { iv, encrypted: b64enc };
 };

@@ -18,18 +18,15 @@ io.on("connection", (socket) => {
 		socket.emit("re-exchange", serEncPubKeyB64());
 		const sharedKey = serEnc.computeSecret(webEncPubKeyB64, "base64", "hex");
 		sessionProvider.setSharedKey(socket.id, sharedKey);
-		console.log(sessionProvider.sessions);
 	});
 
 	socket.on("test", () => {
 		let a = encryptAES("abc", sessionProvider.getSharedKey(socket.id)!);
-		console.log(a);
 		socket.emit("re-test", a);
 	});
 
 	socket.on("disconnecting", () => {
 		sessionProvider.removeSession(socket.id);
-		console.log(sessionProvider.sessions);
 	});
 });
 
