@@ -1,8 +1,11 @@
-import { encryptAES } from "./lib/encryptPass";
-import { serEnc, serEncPubKeyB64 } from "./lib/serverCrypto";
+import { fromByteArray } from "base64-js";
+import { ecryptAes } from "./lib/encryptPass";
 import { Session } from "./lib/session";
 import { app, io, server } from "./lib/socketProvider";
 import { registerHome } from "./routes/home";
+import { serverPrivateKey, serverPublicKey } from "./lib/serverCrypto";
+import nacl from "tweetnacl";
+import naclut from "tweetnacl-util";
 
 registerHome();
 
@@ -14,14 +17,20 @@ io.on("connection", (socket) => {
 		socket.emit("session-ok", session);
 	});
 
-	socket.on("exchange", (webEncPubKeyB64: string) => {
-		socket.emit("re-exchange", serEncPubKeyB64());
-		const sharedKey = serEnc.computeSecret(webEncPubKeyB64, "base64", "hex");
-		sessionProvider.setSharedKey(socket.id, sharedKey);
+	socket.on("exchange", (webPublicKey: string) => {
+		const ecdhSecretKey = nacl.box.before(
+			naclut.decodeBase64(webPublicKey),
+			serverPrivateKey
+		);
+
+		sessionProvider.setSecretKey(socket.id, ecdhSecretKey);
+		sessionProvider.setPublicKey(socket.id, naclut.decodeBase64(webPublicKey));
+
+		socket.emit("re-exchange", naclut.encodeBase64(serverPublicKey));
 	});
 
 	socket.on("test", () => {
-		let a = encryptAES("abc", sessionProvider.getSharedKey(socket.id)!);
+		let a = ecryptAes("hello world");
 		socket.emit("re-test", a);
 	});
 

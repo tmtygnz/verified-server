@@ -9,7 +9,8 @@ export class Session {
 	newSession(sessionId: string) {
 		let newSession: ISession = {
 			sessionId: sessionId,
-			publicKey: "",
+			publicKey: new Uint8Array(),
+			secretKey: new Uint8Array(),
 		};
 		this.sessions.push(newSession);
 		return newSession;
@@ -22,7 +23,23 @@ export class Session {
 		if (toDelete > -1) this.sessions.splice(toDelete, 1);
 	}
 
-	setSharedKey(sessionId: string, publicKey: string) {
+	setSecretKey(sessionId: string, publicKey: Uint8Array) {
+		let toChange = this.sessions.findIndex(
+			(session) => session.sessionId == sessionId
+		);
+		if (toChange > -1) {
+			this.sessions[toChange].secretKey = publicKey;
+		}
+	}
+
+	getSecretKey(sessionId: string) {
+		let session = this.sessions.find((e) => e.sessionId == sessionId);
+		if (session) {
+			return session.secretKey;
+		}
+	}
+
+	setPublicKey(sessionId: string, publicKey: Uint8Array) {
 		let toChange = this.sessions.findIndex(
 			(session) => session.sessionId == sessionId
 		);
@@ -31,7 +48,7 @@ export class Session {
 		}
 	}
 
-	getSharedKey(sessionId: string) {
+	getPublicKey(sessionId: string) {
 		let session = this.sessions.find((e) => e.sessionId == sessionId);
 		if (session) {
 			return session.publicKey;

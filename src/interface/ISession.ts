@@ -1,4 +1,5 @@
 export interface ISession {
 	sessionId: string;
-	publicKey: string;
+	publicKey: Uint8Array;
+	secretKey: Uint8Array;
 }

@@ -1,8 +1,6 @@
-import crypto, { createECDH } from "crypto";
+import nacl from "tweetnacl";
+import { server } from "./socketProvider";
 
-export const serEnc = createECDH("secp384r1");
-
-export const serEncPubKeyB64 = () => {
-	serEnc.generateKeys();
-	return serEnc.getPublicKey().toString("base64");
-};
+export const serverKeys = nacl.box.keyPair();
+export const serverPrivateKey = serverKeys.secretKey;
+export const serverPublicKey = serverKeys.publicKey;
