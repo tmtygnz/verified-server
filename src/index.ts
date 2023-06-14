@@ -1,39 +1,28 @@
 import { fromByteArray } from "base64-js";
-import { ecryptAes } from "./lib/encryptPass";
-import { Session } from "./lib/session";
+import { encryptNacl } from "./lib/encryptPass";
+import { SessionProvider } from "./lib/sessionProvidider";
 import { app, io, server } from "./lib/socketProvider";
 import { registerHome } from "./routes/home";
 import { serverPrivateKey, serverPublicKey } from "./lib/serverCrypto";
 import nacl from "tweetnacl";
 import naclut from "tweetnacl-util";
+import diffieHellmanSocket from "./routes/diffieHellman";
+import sessionHandle from "./routes/sessionHandler";
+import sessionHandlerSocket from "./routes/sessionHandler";
+import { pingPongSocket } from "./routes/pingPong";
 
 registerHome();
 
-const sessionProvider = new Session();
-
 io.on("connection", (socket) => {
-	socket.on("session-pls", () => {
-		let session = sessionProvider.newSession(socket.id);
-		socket.emit("session-ok", session);
-	});
+	sessionHandlerSocket(socket);
 
-	socket.on("exchange", (webPublicKey: Uint8Array) => {
-		const ecdhSecretKey = nacl.box.before(webPublicKey, serverPrivateKey);
-		sessionProvider.setSecretKey(socket.id, ecdhSecretKey);
-		sessionProvider.setPublicKey(socket.id, webPublicKey);
+	diffieHellmanSocket(socket);
 
-		console.log(naclut.encodeBase64(ecdhSecretKey));
-
-		socket.emit("re-exchange", serverPublicKey);
-	});
+	pingPongSocket(socket);
 
 	socket.on("test", () => {
-		let a = ecryptAes("hello world");
+		let a = encryptNacl(`asd`, SessionProvider.getSecretKey(socket.id)!);
 		socket.emit("re-test", a);
-	});
-
-	socket.on("disconnecting", () => {
-		sessionProvider.removeSession(socket.id);
 	});
 });
 
