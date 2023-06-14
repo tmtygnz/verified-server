@@ -17,16 +17,14 @@ io.on("connection", (socket) => {
 		socket.emit("session-ok", session);
 	});
 
-	socket.on("exchange", (webPublicKey: string) => {
-		const ecdhSecretKey = nacl.box.before(
-			naclut.decodeBase64(webPublicKey),
-			serverPrivateKey
-		);
-
+	socket.on("exchange", (webPublicKey: Uint8Array) => {
+		const ecdhSecretKey = nacl.box.before(webPublicKey, serverPrivateKey);
 		sessionProvider.setSecretKey(socket.id, ecdhSecretKey);
-		sessionProvider.setPublicKey(socket.id, naclut.decodeBase64(webPublicKey));
+		sessionProvider.setPublicKey(socket.id, webPublicKey);
 
-		socket.emit("re-exchange", naclut.encodeBase64(serverPublicKey));
+		console.log(naclut.encodeBase64(ecdhSecretKey));
+
+		socket.emit("re-exchange", serverPublicKey);
 	});
 
 	socket.on("test", () => {
